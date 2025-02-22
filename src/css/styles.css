@@ -32,7 +32,7 @@ input:active {
 input:hover {
     border-color: #000000;
 }
-button {
+.submit-button {
     width: 91px;
     height: 40px;
     border-radius: 8px;
@@ -50,7 +50,7 @@ color:#fff;
 
 }
 
-button:hover {
+.submit-button:hover {
     background-color: #6C8CFF;
 }
 
@@ -184,4 +184,18 @@ color: #2E2F42;
    
 .visible {
     display: block;
-};
+}
+.hidden {
+  display: none;
+}
+.load-button-style {
+  width: 125px;
+margin-top: 32px;
+
+}
+.load-more {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+}
