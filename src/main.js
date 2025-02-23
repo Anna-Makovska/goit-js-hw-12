@@ -1,3 +1,4 @@
+
 import { getImages } from './js/pixabay-api';
 import { templateImages } from './js/render-functions';
 import iziToast from 'izitoast';
@@ -8,6 +9,7 @@ import 'simplelightbox/dist/simple-lightbox.min.css';
 const searchform = document.querySelector('.search-form');
 const gallery = document.querySelector('.gallery');
 const loader = document.querySelector('.loader');
+const loaderMore = document.querySelector('.loader-more');
 const loadButton = document.querySelector('.load-button-style');
 const lightbox = new SimpleLightbox('.gallery a', {
   captions: true,
@@ -17,19 +19,19 @@ const lightbox = new SimpleLightbox('.gallery a', {
 
 const params = {
   query: '',
-  page: null,
+  page: 1,
   perPage: 40,
-  total: '',
+  total: 0,
+};
 
-}
-
-  hideLoadMoreBtn();
+hideLoadMoreBtn();
+hideLoaderMore();
 
 searchform.addEventListener('submit', async e => {
   e.preventDefault();
   params.page = 1;
-
   params.query = searchform.elements.searchQuery.value.trim();
+
   if (params.query === '') {
     iziToast.warning({
       message: 'Please, fill the form!',
@@ -37,24 +39,28 @@ searchform.addEventListener('submit', async e => {
     });
     return;
   }
-  loader.classList.add('visible');
+
+  gallery.innerHTML = '';
   hideLoadMoreBtn();
+  hideLoaderMore();
+  loader.classList.add('visible');
 
-
- 
   try {
     const data = await getImages(params.query, params.page, params.perPage);
-    params.total = data.totalHits; 
-    
+    params.total = data.totalHits;
 
-    console.log(data);
-    const markup = templateImages(data);
+    if (data.hits.length === 0) {
+      iziToast.info({
+        message: 'No images found. Try another query.',
+        position: 'topRight',
+      });
+      return;
+    }
 
-    gallery.insertAdjacentHTML('beforeend', templateImages(data));
+    gallery.insertAdjacentHTML('beforeend', templateImages(data.hits));
     lightbox.refresh();
     checkButtonStatus();
   } catch (error) {
-    gallery.innerHTML = '';
     iziToast.error({
       title: 'Error',
       message: 'Something went wrong, try again later!',
@@ -62,59 +68,75 @@ searchform.addEventListener('submit', async e => {
     console.error(error);
   } finally {
     loader.classList.remove('visible');
-
   }
-  checkButtonStatus();
 
   e.target.reset();
 });
 
-loadButton.addEventListener('click', async (e) => {
+loadButton.addEventListener('click', async e => {
   e.preventDefault();
-
   params.page += 1;
-  checkButtonStatus();
+
+  hideLoadMoreBtn();
+  showLoaderMore();
+  
 
   try {
     const data = await getImages(params.query, params.page, params.perPage);
-    console.log(data);
-    const markup = templateImages(data);
-    gallery.insertAdjacentHTML('beforeend', markup);
+
+    gallery.insertAdjacentHTML('beforeend', templateImages(data.hits));
     lightbox.refresh();
+    smoothScroll(); 
     checkButtonStatus();
   } catch (error) {
-    gallery.innerHTML = '';
     iziToast.error({
       title: 'Error',
       message: 'Something went wrong, try again later!',
     });
     console.error(error);
   } finally {
-    loader.classList.remove('visible');
-
+    hideLoaderMore(); 
   }
-})
+});
 
-function showLoadMoreBtn () {
-   loadButton.style.display = 'block';
-  
-
+function showLoadMoreBtn() {
+  loadButton.style.display = 'block';
 }
-function hideLoadMoreBtn () {
-    loadButton.style.display = 'none';
 
+function hideLoadMoreBtn() {
+  loadButton.style.display = 'none';
 }
-function checkButtonStatus () {
-  const perPage = 40;
-  const maxPage = Math.ceil(params.total / perPage);
+
+function showLoaderMore() {
+  loaderMore.classList.add('visible');
+}
+
+function hideLoaderMore() {
+  loaderMore.classList.remove('visible');
+}
+
+function checkButtonStatus() {
+  const maxPage = Math.ceil(params.total / params.perPage);
+
   if (params.page < maxPage) {
-    showLoadMoreBtn();
+    showLoadMoreBtn(); 
   } else {
     hideLoadMoreBtn();
     iziToast.info({
       message: "We're sorry, but you've reached the end of search results.",
       position: 'topLeft',
-
-    })
+    });
   }
+}
+
+function smoothScroll() {
+  console.log("Прокручування виконується...")
+  const galleryItem = document.querySelector('.gallery a'); 
+  const cardHeight = galleryItem.getBoundingClientRect().height; 
+
+  window.scrollBy({
+    top: cardHeight * 2,
+    left: 0,
+    behavior: "smooth", 
+  });
 }

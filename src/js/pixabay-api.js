@@ -42,7 +42,7 @@ export async function getImages(value) {
               balloon: true,
           });
       }
-      return res.data.hits;
+      return res.data;
   } catch (error){
           console.error(error);
                  throw error;
