@@ -130,13 +130,12 @@ function checkButtonStatus() {
 }
 
 function smoothScroll() {
-  console.log("Прокручування виконується...")
-  const galleryItem = document.querySelector('.gallery a'); 
-  const cardHeight = galleryItem.getBoundingClientRect().height; 
-
-  window.scrollBy({
-    top: cardHeight * 2,
-    left: 0,
-    behavior: "smooth", 
-  });
+const { height: cardHeight } = document
+  .querySelector('.gallery')
+  .firstElementChild.getBoundingClientRect();
+window.scrollBy({
+  top: cardHeight * 2,
+  behavior: 'smooth',
+}); 
 }
+    
